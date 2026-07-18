@@ -1,0 +1,4 @@
+cd ..\codex-deck
+py -m PyInstaller --onefile --noconsole main.py
+
+-> will be saved as main.exe in ..codex-deck\dist
