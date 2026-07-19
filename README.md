@@ -53,7 +53,7 @@
                     Codex 입력 제어
 ```
 
-## 시작
+## 시작하기
 
 1. "codex_deck.ino"를 아두이노에 업로드하세요.
 2. ```bash
@@ -70,14 +70,12 @@ dist/
 └── main.exe
 ```
 
-## 실행
+## 사용법
 
 1. Arduino Nano와 OLED, 스위치, KY-040을 연결합니다.
 2. `dist/main.exe`를 실행합니다.
 3. 버튼과 로터리 인코더로 Codex의 모델 및 추론 수준을 변경합니다.
 > Arduino 연결 후 빌드된 main.exe를 실행하세요. 시스템 트레이에 실행됩니다. 우클릭으로 종료 할 수 있습니다.
-> 
-> **운영체제와 Codex 앱의 포커스 상태에 따라 키 입력이 전달되는 창이 달라질 수 있습니다.**
 
 ## 프로젝트 구조
 
@@ -91,8 +89,11 @@ codex-deck/
 ## 개발 목적
 
 Codex를 사용하면서 반복적으로 입력하는 단축키를 물리 인터페이스로 분리해, 작업 흐름을 끊지 않고 모델과 추론 수준을 바꾸는 것을 목표로 합니다.
+
+> **해당 프로젝트는 Windows 11에서 개발 및 테스트되었습니다.**
   </details>
 </p>
+
 
 # codex-deck
 
@@ -117,7 +118,7 @@ Codex를 사용하면서 반복적으로 입력하는 단축키를 물리 인터
 | Shortcut input | Sends `Ctrl+C`, `Ctrl+V`, `Ctrl+A`, `Enter` |
 | Status display | Shows the current state on an SSD1306 OLED |
 
-## Hardware Used
+## Componenets Used
 
 - 1x  Arduino Nano
 - 2x  4-pin tact_sw
@@ -165,8 +166,6 @@ dist/
 3. Use the buttons and rotary encoder to change Codex's model and reasoning level.
 
 > Run the built `main.exe` after connecting the Arduino. It launches into the system tray — right-click the tray icon to quit.
->
-> **Which window receives the key input depends on your OS and which app currently has focus.**
 
 ## Project Structure
 
@@ -180,3 +179,5 @@ codex-deck/
 ## Motivation
 
 The goal of this project is to move the shortcuts you repeatedly type while using Codex onto a physical interface, so you can switch models and reasoning levels without interrupting your flow.
+
+> **This project was built and tested on Windows 11.**
