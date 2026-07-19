@@ -27,9 +27,9 @@
 #include <Adafruit_SSD1306.h>
 
 // ---------- 핀 정의 ----------
-#define PIN_ENC_S1   2   // CLK, 인터럽트 핀
-#define PIN_ENC_S2   3   // DT
-#define PIN_ENC_KEY  4   // 로터리 클릭
+#define PIN_ENC_CLK   2   // CLK
+#define PIN_ENC_DT   3   // DT
+#define PIN_ENC_SW  4   // SW
 #define PIN_BTN_MODEL   5
 #define PIN_BTN_REASON  6
 
@@ -75,15 +75,15 @@ void handleEncoderTurn();
 void setup() {
   Serial.begin(9600);
 
-  pinMode(PIN_ENC_S1, INPUT_PULLUP);
-  pinMode(PIN_ENC_S2, INPUT_PULLUP);
-  pinMode(PIN_ENC_KEY, INPUT_PULLUP);
+  pinMode(PIN_ENC_CLK, INPUT_PULLUP);
+  pinMode(PIN_ENC_DT, INPUT_PULLUP);
+  pinMode(PIN_ENC_SW, INPUT_PULLUP);
   pinMode(PIN_BTN_MODEL, INPUT_PULLUP);
   pinMode(PIN_BTN_REASON, INPUT_PULLUP);
 
   // 인터럽트: S1, S2 둘 다 변화 감지 (노치 복귀 판정에 둘 다 필요)
-  attachInterrupt(digitalPinToInterrupt(PIN_ENC_S1), handleEncoderTurn, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(PIN_ENC_S2), handleEncoderTurn, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(PIN_ENC_CLK), handleEncoderTurn, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(PIN_ENC_DT), handleEncoderTurn, CHANGE);
 
   // OLED 초기화 (I2C 주소 0x3C가 SSD1306 128x64 모듈의 일반적인 기본값)
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
@@ -119,7 +119,7 @@ void loop() {
   }
 
   // ---------- 로터리 클릭 (KEY) : 값 입력 + Enter까지 한 번에, 이후 모드 초기화 ----------
-  if (digitalRead(PIN_ENC_KEY) == LOW && (now - lastKeyTime) > DEBOUNCE_MS) {
+  if (digitalRead(PIN_ENC_SW) == LOW && (now - lastKeyTime) > DEBOUNCE_MS) {
     lastKeyTime = now;
     if (currentMode == MODE_MODEL) {
       sendCommand(String("CMD:SELECT_ENTER:") + modelList[modelIndex]);
@@ -153,8 +153,8 @@ void loop() {
 // 인터럽트 서비스 루틴: 노치를 벗어났다가 정지 위치(0b11)로
 // 돌아오는 순간에만 방향을 확정한다. 중간의 바운싱은 무시된다.
 void handleEncoderTurn() {
-  uint8_t s1 = digitalRead(PIN_ENC_S1);
-  uint8_t s2 = digitalRead(PIN_ENC_S2);
+  uint8_t s1 = digitalRead(PIN_ENC_CLK);
+  uint8_t s2 = digitalRead(PIN_ENC_DT);
   uint8_t bits = (s1 << 1) | s2;
 
   if (bits == lastBits) {
@@ -194,7 +194,7 @@ void updateDisplay() {
       display.println("Mode: NONE");
       display.println("");
       display.println("Press MODEL or");
-      display.println("REASON button");
+      display.println("REASONING button");
       break;
 
     case MODE_MODEL:
