@@ -30,10 +30,12 @@
 
 ## 사용 부품
 
-- Arduino Nano
-- 4-pin tact_sw
-- KY-040
-- SSD1306
+- 1x  Arduino Nano
+- 2x  4-pin tact_sw
+- 1x  KY-040
+- 1x  SSD1306
+- 28x  M-M Dupont cable
+- 1x  Breadboard
 
 ## 동작 예시
 
@@ -117,10 +119,12 @@ Codex를 사용하면서 반복적으로 입력하는 단축키를 물리 인터
 
 ## Hardware Used
 
-- Arduino Nano
-- 4-pin tact switch
-- KY-040 rotary encoder
-- SSD1306 OLED display
+- 1x  Arduino Nano
+- 2x  4-pin tact_sw
+- 1x  KY-040
+- 1x  SSD1306
+- 28x  M-M Dupont cable
+- 1x  Breadboard
 
 ## How It Works
 
