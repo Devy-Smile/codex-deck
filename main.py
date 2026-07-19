@@ -15,6 +15,7 @@ Codex Model/Reasoning Controller - PC측 스크립트
       실제 COM 포트 번호로 바꿔야 한다. (Windows 장치관리자 -> 포트(COM & LPT))
     - 버튼을 누르기 전에 사용자가 직접 VS Code Codex 패널을 클릭해서
       포커스를 맞춰줘야 한다. (자동 포커스 기능 없음)
+    - 현재 활성 창이 VS Code 또는 ChatGPT가 아니면 명령은 무시된다.
 
 Serial 프로토콜 (Arduino -> PC), 한 줄씩 수신:
     CMD:MODEL_CMD               -> "/model" 붙여넣기 + Enter
@@ -29,6 +30,7 @@ Serial 프로토콜 (Arduino -> PC), 한 줄씩 수신:
 
 import time
 import threading
+import ctypes
 import serial
 import pyautogui
 import pyperclip
@@ -38,11 +40,30 @@ from PIL import Image, ImageDraw
 # ---------- 설정값 ----------
 SERIAL_PORT = "COM9"   # 실제 포트 번호로 반드시 변경할 것
 BAUD_RATE = 9600
-KEY_DELAY = 0.01        # 키 입력 사이 짧은 지연 (안정성용)
+KEY_DELAY = 0.02        # 키 입력 사이 짧은 지연 (안정성용)
+
+# 이 문자열들 중 하나라도 현재 활성 창 제목에 포함되어 있어야
+# 키 입력이 실행된다. (대소문자 구분 없이 비교)
+ALLOWED_WINDOW_KEYWORDS = ["Visual Studio Code", "ChatGPT"]
 
 # ---------- 전역 상태 ----------
 running = True          # False가 되면 백그라운드 스레드와 트레이 아이콘 모두 종료
 tray_icon = None        # pystray Icon 객체 (상태 업데이트용)
+
+
+def get_active_window_title() -> str:
+    """현재 포커스된(활성) 창의 제목을 반환한다. Windows 전용."""
+    hwnd = ctypes.windll.user32.GetForegroundWindow()
+    length = ctypes.windll.user32.GetWindowTextLengthW(hwnd)
+    buff = ctypes.create_unicode_buffer(length + 1)
+    ctypes.windll.user32.GetWindowTextW(hwnd, buff, length + 1)
+    return buff.value
+
+
+def is_allowed_window_focused() -> bool:
+    """현재 활성 창이 VS Code 또는 ChatGPT 앱인지 확인한다."""
+    title = get_active_window_title().lower()
+    return any(keyword.lower() in title for keyword in ALLOWED_WINDOW_KEYWORDS)
 
 
 def make_icon_image(color: str) -> Image.Image:
@@ -55,11 +76,18 @@ def make_icon_image(color: str) -> Image.Image:
 
 
 def paste_text(text: str):
-    """클립보드에 text를 넣고 Ctrl+V로 붙여넣는다."""
+    """클립보드에 text를 넣고 Ctrl+V로 붙여넣은 뒤, 원래 클립보드 내용을 복원한다."""
+    try:
+        original = pyperclip.paste()
+    except Exception:
+        original = None
+
     pyperclip.copy(text)
     time.sleep(KEY_DELAY)
     pyautogui.hotkey("ctrl", "v")
-    time.sleep(KEY_DELAY)
+
+    if original is not None:
+        pyperclip.copy(original)
 
 
 def clear_input():
@@ -67,18 +95,21 @@ def clear_input():
     pyautogui.hotkey("ctrl", "a")
     time.sleep(KEY_DELAY)
     pyautogui.press("delete")
-    time.sleep(KEY_DELAY)
 
 
 def press_enter():
-    pyautogui.press("enter")
     time.sleep(KEY_DELAY)
-
+    pyautogui.press("enter")
 
 def handle_command(line: str):
-    """Arduino가 보낸 한 줄 명령을 해석하고 실행한다."""
+    """Arduino가 보낸 한 줄 명령을 해석하고 실행한다.
+    단, 현재 활성 창이 VS Code나 ChatGPT가 아니면 명령을 무시한다."""
     line = line.strip()
     if not line:
+        return
+
+    if not is_allowed_window_focused():
+        print(f"[무시됨] 허용된 창(VS Code/ChatGPT)이 포커스 상태가 아님: {line}")
         return
 
     print(f"[수신] {line}")
@@ -87,16 +118,19 @@ def handle_command(line: str):
         clear_input()
         paste_text("/model")
         press_enter()
+        time.sleep(KEY_DELAY)
 
     elif line == "CMD:REASON_CMD":
         clear_input()
         paste_text("/reasoning")
         press_enter()
+        time.sleep(KEY_DELAY)
 
     elif line.startswith("CMD:SELECT_ENTER:"):
         value = line[len("CMD:SELECT_ENTER:"):]
         paste_text(value)
         press_enter()
+        time.sleep(KEY_DELAY)
         clear_input()
 
     elif line.startswith("ERR:"):

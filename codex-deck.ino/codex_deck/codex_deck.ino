@@ -44,8 +44,8 @@ enum Mode { MODE_NONE, MODE_MODEL, MODE_REASON };
 Mode currentMode = MODE_NONE;
 
 // ---------- 리스트 정의 ----------
-const char* modelList[] = { "GPT-5.6Luna", "GPT-5.6Sol" };
-const int modelListLen = 2;
+const char* modelList[] = { "GPT-5.6Luna", "GPT-5.6Terra", "GPT-5.6Sol" };
+const int modelListLen = 3;
 
 const char* reasonList[] = { "Light", "Medium", "High", "Xhigh", "Max" };
 const int reasonListLen = 5;
